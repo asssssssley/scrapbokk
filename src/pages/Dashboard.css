@@ -1,0 +1,103 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #F4EED8;
+}
+
+#nav {
+    top: 0;
+    left: 0;
+    right: 0;
+    position: fixed;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    align-items: center;
+    height: 125px;
+    width: 100%;
+    padding: 0 25px;
+    box-sizing: border-box;
+    background-color: #F4EED8;
+}
+
+#title {
+    text-align: center;
+    align-items: center;
+    display: flex;
+}
+
+#title h1 {
+    color: #5C6B42;
+    margin-left: 25px;
+}
+
+#title img {
+    height: 75px;
+    width: 75px;
+}
+
+#nav button {
+    background-color: #5C6B42;
+    color: white;
+    border-radius: 30px;
+    padding: 10px 20px;
+    height: 50px;
+    width: 100px;
+}
+
+#nav button:hover {
+    background-color: #3a4429;
+}
+
+#scrapbooks {
+    width: 100%;
+    margin-top: 75px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 50px;
+}
+
+.scrapbook {
+    width: 250px;
+    height: 250px;
+    padding: 15px;
+    border-radius: 25px;
+    background-color: #93A072;
+    color: #353d28;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.scrapbook:hover {
+    background-color: #3a4429;
+    color: white;
+}
+
+.scrapbook h3 {
+    margin: 0;
+    padding-top: 15px;
+    height: 40px;
+    text-align: left;
+    overflow: hidden;
+}
+
+.scrapbook h4 {
+    margin: 0;
+    text-align: right;
+}
+
+.thumbnail {
+    height: 200px;
+    width: 250px;
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: #F4EED8;
+    display: flex;
+    justify-content: center;
+}
+
+.thumbnail img {
+    height: 100%;
+    width: 100%;
+}
