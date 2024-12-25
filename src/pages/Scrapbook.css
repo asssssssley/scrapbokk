@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #F4EED8;
+}
+
+#bar {
+    background-color: #5C6B42;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 50px;
+    position: fixed;
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    transition: width 0.4s ease;
+}
+
+#bar.expanded {
+    width: 350px;
+    padding-left: 10px;
+    align-items: flex-start;
+}
+
+#bar div {
+    cursor: pointer;
+}
