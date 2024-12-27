@@ -14,6 +14,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.3.0",
     "@mui/material": "^6.3.0",
+    "client": "file:",
     "dotenv": "^16.4.7",
     "js-cookie": "^3.0.5",
     "react": "^18.3.1",
