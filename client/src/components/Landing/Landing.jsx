@@ -55,7 +55,7 @@ const Landing = () => {
           <Button 
             variant="outlined" 
             sx={{ 
-              margin: { xs: 1, md: 2 }, 
+              margin: 2, 
               marginLeft: 1, 
               borderRadius: "20px", 
               backgroundColor: "#5C6B42", 

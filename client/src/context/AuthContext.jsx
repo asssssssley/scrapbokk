@@ -1,43 +1,54 @@
-import React, { createContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import React from "react";
 
-const AuthContext = createContext();
+const AuthContext = React.createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return !!Cookies.get("jwt"); 
-  });
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const login = (googleToken) => {
+  const login = () => {
     setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    Cookies.remove("jwt"); 
-    setIsAuthenticated(false);
-  };
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setIsAuthenticated(!!Cookies.get("jwt"));
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  const googleSignIn = (response) => {
-    if (response?.tokenId) {
-      login(response.tokenId);
+  const logout = async () => {
+    try {
+      const response = await fetch("/logout", { 
+        method: "GET", 
+        credentials: "include" 
+      });
+  
+      if (response.ok) {
+        setIsAuthenticated(false); 
+      } else {
+        console.error("Failed to log out");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
     }
   };
 
+  React.useEffect(() => {
+    const verifyAuth = async () => {
+      const response = await fetch("/checkAuth", {
+        method: "GET",
+        credentials: "include", 
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+     
+      setIsLoading(false);
+    };
+
+    verifyAuth();
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, googleSignIn }}>
-      {children}
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 };

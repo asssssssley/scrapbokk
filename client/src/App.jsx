@@ -11,12 +11,12 @@ const App = () => {
 
   return (
     <DarkModeProvider>
-      <Router> 
+      <Router>
         <Routes>
           <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
           <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="login" />} />
-          <Route path="/signup" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="singup" />} />
-          <Route path="/dashboard" element={isAuthenticated ? <Dummy /> : <Landing />} />
+          <Route path="/signup" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="signup" />} />
+          <Route path="/dashboard" element={isAuthenticated ? <Dummy /> : <Navigate to="/" />} />
         </Routes>
       </Router>
     </DarkModeProvider>
