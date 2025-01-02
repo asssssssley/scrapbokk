@@ -5,15 +5,16 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return !!Cookies.get("jwt"); 
+    return !!Cookies.get("jwt");
   });
 
   const login = (googleToken) => {
+    Cookies.set("jwt", googleToken, { expires: 7, path: "" });
     setIsAuthenticated(true);
   };
 
   const logout = () => {
-    Cookies.remove("jwt"); 
+    Cookies.remove("jwt");
     setIsAuthenticated(false);
   };
 

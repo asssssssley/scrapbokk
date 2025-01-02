@@ -4,19 +4,19 @@ import { DarkModeProvider } from "./context/DarkModeContext";
 import useAuth from "./context/useAuth";
 import Landing from "./components/Landing/Landing";
 import Signin from "./components/Signin/Signin";
-import Dummy from "./components/Dummy";
+import Dashboard from "./components/Dashboard/Dashboard";
 
 const App = () => {
   const { isAuthenticated } = useAuth();
 
   return (
     <DarkModeProvider>
-      <Router> 
+      <Router>
         <Routes>
           <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Landing />} />
           <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="login" />} />
           <Route path="/signup" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="singup" />} />
-          <Route path="/dashboard" element={isAuthenticated ? <Dummy /> : <Landing />} />
+          <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Landing />} />
         </Routes>
       </Router>
     </DarkModeProvider>
