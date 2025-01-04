@@ -61,7 +61,7 @@ const DrawerComponent = () => {
           flexDirection: 'row',
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: 400,
+            width: 350,
             border: 0,
             boxSizing: 'border-box',
             backgroundColor: darkMode
@@ -73,9 +73,19 @@ const DrawerComponent = () => {
           },
         }}
       >
-        <Box sx={{ display: 'flex', padding: 1 }}>
-          {/* Icons */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
+          {/* Fixed List */}
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            height: '100%',
+            width: 80,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            paddingTop: 2
+          }}>
             <ListItem
               button='true'
               onClick={handleHomeButton}
@@ -123,8 +133,14 @@ const DrawerComponent = () => {
             </ListItem>
           </Box>
 
-          {/* Content */}
-          <Box sx={{ flex: 1, padding: 2 }}>
+          {/* Scrollable Content */}
+          <Box sx={{
+            flex: 1,
+            padding: 2,
+            marginLeft: '70px',
+            overflowY: 'auto',
+            height: '100%'
+          }}>
             <Typography variant="h6" color={darkMode ? darkTheme.palette.background.default : lightTheme.palette.background.default}>
               {isElement ? <Elements /> : 'Upload'}
             </Typography>

@@ -25,7 +25,7 @@ const DrawerToggleButton = ({ open, toggleDrawer }) => {
         position: 'fixed',
         height: '100%',
         top: '50%',
-        left: open ? 400 : 0,
+        left: open ? 350 : 0,
         transition: 'left 0.3s ease',
         zIndex: 1201,
         transform: 'translateY(-50%)',
