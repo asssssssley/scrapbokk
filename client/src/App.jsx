@@ -5,6 +5,7 @@ import useAuth from "./context/useAuth";
 import Landing from "./components/Landing/Landing";
 import Signin from "./components/Signin/Signin";
 import Dashboard from "./components/Dashboard/Dashboard";
+import Scrapbook from "./components/Scrapbook/Scrapbook";
 
 const App = () => {
   const { isAuthenticated } = useAuth();
@@ -17,6 +18,7 @@ const App = () => {
           <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="login" />} />
           <Route path="/signup" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="singup" />} />
           <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Landing />} />
+          <Route path="/scrapbook" element={isAuthenticated ? <Scrapbook /> : <Landing />} />
         </Routes>
       </Router>
     </DarkModeProvider>

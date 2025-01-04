@@ -9,6 +9,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import DarkModeContext from '../../context/DarkModeContext';
 import { darkTheme, lightTheme } from '../Theme/theme';
 import DrawerToggleButton from './DrawerToggleButton';
+import Elements from './Elements';
 
 const DrawerComponent = () => {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ const DrawerComponent = () => {
           {/* Icons */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <ListItem
-              button
+              button='true'
               onClick={handleHomeButton}
               sx={listItemStyle(false)}
             >
@@ -85,7 +86,7 @@ const DrawerComponent = () => {
               </ListItemIcon>
             </ListItem>
             <ListItem
-              button
+              button='true'
               onClick={() => setIsElement(true)}
               sx={listItemStyle(isElement)}
             >
@@ -94,7 +95,7 @@ const DrawerComponent = () => {
               </ListItemIcon>
             </ListItem>
             <ListItem
-              button
+              button='true'
               onClick={() => setIsElement(false)}
               sx={listItemStyle(!isElement)}
             >
@@ -103,7 +104,7 @@ const DrawerComponent = () => {
               </ListItemIcon>
             </ListItem>
             <ListItem
-              button
+              button='true'
               onClick={() => handleShareButton()}
               sx={listItemStyle(false)}
             >
@@ -112,7 +113,7 @@ const DrawerComponent = () => {
               </ListItemIcon>
             </ListItem>
             <ListItem
-              button
+              button='true'
               onClick={() => handleUploadButton()}
               sx={listItemStyle(false)}
             >
@@ -125,7 +126,7 @@ const DrawerComponent = () => {
           {/* Content */}
           <Box sx={{ flex: 1, padding: 2 }}>
             <Typography variant="h6" color={darkMode ? darkTheme.palette.background.default : lightTheme.palette.background.default}>
-              {isElement ? 'Element' : 'Upload'}
+              {isElement ? <Elements /> : 'Upload'}
             </Typography>
           </Box>
         </Box>

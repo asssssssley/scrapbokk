@@ -13,9 +13,30 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    Cookies.remove("jwt");
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      const token = Cookies.get("jwt");
+
+      if (!token) {
+        console.log("No token found in cookies");
+        return;
+      }
+
+      const res = await fetch("http://localhost:5001/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await res.json();
+      console.log("Logout successful:", data);
+      Cookies.remove("jwt");
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error("Logout error:", error.response ? error.response.data : error.message);
+    }
   };
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
-import thumbnailImg from "../../assets/thumbnail-placeholder.jpg";
+import thumbnailImg from "../../../public/thumbnail-placeholder.jpg";
 
 const ScrapbookDisplay = ({ scrapbooks }) => {
   return (
