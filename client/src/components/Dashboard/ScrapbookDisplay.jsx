@@ -7,8 +7,6 @@ const ScrapbookDisplay = ({ scrapbooks }) => {
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
         width: '100%',
         paddingTop: { xs: '5rem', sm: '7rem', md: '9rem' },
       }}
@@ -53,7 +51,7 @@ const ScrapbookDisplay = ({ scrapbooks }) => {
                   : scrapbook.title}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                {scrapbook.pages} pages
+                {scrapbook.pages.length} pages
               </Typography>
             </CardContent>
           </Card>

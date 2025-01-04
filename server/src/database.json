@@ -1,6 +1,35 @@
 {
   "users": [
+    {
+      "sub": "101601707303840091867",
+      "email": "rokika.kh1@gmail.com",
+      "name": "Rokika Khondaker",
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocJEqFz-Hg17h0ukd3rxnrdXVwNGCD7MbRvcqxHArwsLCYNIydT0=s96-c",
+      "scrapbooks": [1, 2],
+      "customAssets": []
+    }
   ],
   "scrapbooks": [
+    {
+      "id": "1",
+      "title": "London",
+      "img": "https://via.placeholder.com/150/0000FF/808080?Text=PAKAINFO.com",
+      "color": "black",
+      "pages": []
+    },
+    {
+      "id": "2",
+      "title": "paris",
+      "img": "https://via.placeholder.com/150/0000FF/808080?Text=PAKAINFO.com",
+      "color": "black",
+      "pages": []
+    },
+    {
+      "id": "3",
+      "title": "lisbon",
+      "img": "https://via.placeholder.com/150/0000FF/808080?Text=PAKAINFO.com",
+      "color": "black",
+      "pages": []
+    }
   ]
 }

@@ -10,6 +10,7 @@ import DarkModeContext from '../../context/DarkModeContext';
 import { darkTheme, lightTheme } from '../Theme/theme';
 import DrawerToggleButton from './DrawerToggleButton';
 import Elements from './Elements';
+import Uploads from './Uploads';
 
 const DrawerComponent = () => {
   const navigate = useNavigate();
@@ -142,7 +143,7 @@ const DrawerComponent = () => {
             height: '100%'
           }}>
             <Typography variant="h6" color={darkMode ? darkTheme.palette.background.default : lightTheme.palette.background.default}>
-              {isElement ? <Elements /> : 'Upload'}
+              {isElement ? <Elements /> : <Uploads />}
             </Typography>
           </Box>
         </Box>

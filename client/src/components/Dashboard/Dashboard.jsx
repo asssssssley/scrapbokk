@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import AuthContext from "../../context/AuthContext";
 import { ThemeProvider, CssBaseline, Typography, Button } from "@mui/material";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -10,8 +10,35 @@ import DarkModeContext from "../../context/DarkModeContext";
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
+  const [scrapbooks, setScrapbooks] = useState([]);
   const { darkMode } = useContext(DarkModeContext);
   const { logout } = useContext(AuthContext);
+
+  const fetchScrapbooks = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/scrapbooks`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`${res.status}`);
+      }
+
+      const data = await res.json();
+      setScrapbooks(data);
+    } catch (error) {
+      console.error("Error fetching scrapbooks:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchScrapbooks();
+  }, []);
+
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -35,14 +62,6 @@ const Dashboard = () => {
         : darkTheme.palette.text.primary,
     },
   });
-
-  const scrapbooks = [
-    { title: "London", pages: "12", img: "https://via.placeholder.com/150/0000FF/808080?Text=PAKAINFO.com" },
-    { title: "Sydney", pages: "10", img: "https://i.imgur.com/CzXTtJV.jpg" },
-    { title: "Rome", pages: "7", img: "" },
-    { title: "Sydney", pages: "10", img: "https://i.imgur.com/CzXTtJV.jpg" },
-    { title: "Rome", pages: "7", img: "https://i.imgur.com/OB0y6MR.jpg" },
-  ];
 
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>

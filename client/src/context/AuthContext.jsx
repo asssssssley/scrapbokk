@@ -1,65 +1,54 @@
-import React, { createContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import React from "react";
 
-const AuthContext = createContext();
+const AuthContext = React.createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return !!Cookies.get("jwt");
-  });
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const login = (googleToken) => {
-    Cookies.set("jwt", googleToken, { expires: 7, path: "" });
+  const login = () => {
     setIsAuthenticated(true);
   };
 
   const logout = async () => {
     try {
-      const token = Cookies.get("jwt");
-
-      if (!token) {
-        console.log("No token found in cookies");
-        return;
-      }
-
-      const res = await fetch("http://localhost:5001/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
+      const response = await fetch("/logout", {
+        method: "GET",
+        credentials: "include"
       });
 
-      const data = await res.json();
-      console.log("Logout successful:", data);
-      Cookies.remove("jwt");
-      setIsAuthenticated(false);
+      if (response.ok) {
+        setIsAuthenticated(false);
+      } else {
+        console.error("Failed to log out");
+      }
     } catch (error) {
-      console.error("Logout error:", error.response ? error.response.data : error.message);
+      console.error("Logout error:", error);
     }
   };
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setIsAuthenticated(!!Cookies.get("jwt"));
+  React.useEffect(() => {
+    const verifyAuth = async () => {
+      const response = await fetch("/checkAuth", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+
+      setIsLoading(false);
     };
 
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    verifyAuth();
   }, []);
 
-  const googleSignIn = (response) => {
-    if (response?.tokenId) {
-      login(response.tokenId);
-    }
-  };
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, googleSignIn }}>
-      {children}
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      {!isLoading && children}
     </AuthContext.Provider>
   );
 };

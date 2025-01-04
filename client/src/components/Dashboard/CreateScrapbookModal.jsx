@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { styled } from '@mui/material/styles';
 import { Modal, Box, Typography, Input, InputLabel, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
 
@@ -30,7 +31,6 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
     justifyContent: 'center',
   };
 
-  // Reusable ToggleButton component
   const ColorToggleButton = ({ value, selectedColor, unselectedColor, iconColor }) => (
     <ToggleButton
       value={value}
@@ -45,6 +45,33 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
       {background === value && <DoneIcon sx={{ color: iconColor }} />}
     </ToggleButton>
   );
+
+  const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+  });
+
+  const getButtonStyles = () => ({
+    padding: "15px",
+    marginBottom: 2,
+    transition: "background-color 0.3s",
+    borderRadius: "15px",
+    fontSize: { xs: "0.6rem", sm: "0.8rem", md: "1rem" },
+    color: darkMode
+      ? darkTheme.palette.background.default
+      : lightTheme.palette.background.default,
+    backgroundColor: darkMode
+      ? darkTheme.palette.text.primary
+      : lightTheme.palette.text.primary,
+  });
+
 
   return (
     <Modal
@@ -78,6 +105,22 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
             color: 'text.primary',
           }}
         />
+
+        <Button
+          component="label"
+          role={undefined}
+          variant="contained"
+          tabIndex={-1}
+          sx={getButtonStyles}
+        >
+          Add Thumbnail
+          <VisuallyHiddenInput
+            type="file"
+            onChange={(event) => console.log(event.target.files)}
+            multiple
+            accept="image/*"
+          />
+        </Button>
 
         <InputLabel
           htmlFor="scrapbook-background"
