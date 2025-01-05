@@ -1,3 +1,5 @@
+const { readDatabase, writeDatabase } = require('./helper');
+
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
@@ -42,6 +44,20 @@ const signin = async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    const users = readDatabase().users;
+
+    // Add user if not already in the database
+    if (!users.some(u => u.email === user.email)) {
+      users.push({
+        sub: user.sub,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        scrapbooks: [],
+      });
+      writeDatabase({ users, scrapbooks: [] });
+    }
+
     // store token in cookie
     res.cookie("jwt", jwtToken, {
       httpOnly: true,
@@ -50,27 +66,10 @@ const signin = async (req, res) => {
       maxAge: 3600000,
     });
 
-    res.json({ message: "Login successful" });
+    res.json({ message: "Login successful", user: user.email });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
-};
-
-// check and verify jwt in cookies
-const checkAuth = (req, res, next) => {
-  const token = req.cookies.jwt;
-
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  jwt.verify(token, SECRET_KEY, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-    req.user = decoded;
-    next();
-  });
 };
 
 // logout functionality
@@ -85,4 +84,4 @@ const logout = (req, res) => {
   return res.status(200).json({ message: "Logged out successfully" });
 };
 
-module.exports = { signin, checkAuth, logout };
+module.exports = { signin, logout };

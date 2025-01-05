@@ -2,7 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const { signin, checkAuth, logout } = require("./src/auth");
+const { checkAuth } = require('./src/helper');
+const { signin, logout } = require("./src/auth");
+const { getScrapbook, getScrapbooks, createScrapbook } = require("./src/user");
 
 const app = express();
 
@@ -31,7 +33,13 @@ app.get("/checkAuth", checkAuth, (req, res) => {
 // logout route
 app.get("/logout", logout);
 
-const PORT = 5000;
+app.get("/scrapbook", getScrapbook);
+
+app.get("/scrapbooks", getScrapbooks);
+
+app.post("/create", createScrapbook);
+
+const PORT = 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
