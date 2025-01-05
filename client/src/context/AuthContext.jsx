@@ -3,12 +3,14 @@ import React from "react";
 const AuthContext = React.createContext();
 
 export const AuthProvider = ({ children }) => {
+  const [user, setUser] = React.useState(null);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const login = () => {
+  const login = (user) => {
     setIsAuthenticated(true);
-  };
+    setUser(user);
+  }
 
   const logout = async () => {
     try {
@@ -19,6 +21,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         setIsAuthenticated(false);
+        setUser(null);
       } else {
         console.error("Failed to log out");
       }
@@ -34,11 +37,13 @@ export const AuthProvider = ({ children }) => {
         credentials: "include",
       });
 
+      /* think this needs to be removed
       if (response.ok) {
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
       }
+        */
 
       setIsLoading(false);
     };
@@ -47,7 +52,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
       {!isLoading && children}
     </AuthContext.Provider>
   );

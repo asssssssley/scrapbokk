@@ -1,8 +1,15 @@
 import React from 'react';
 import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import thumbnailImg from "../../assets/thumbnail-placeholder.jpg";
+import { useNavigate } from 'react-router-dom';
 
 const ScrapbookDisplay = ({ scrapbooks }) => {
+  const navigate = useNavigate();
+
+  const getScrapbook = (id) => {
+    navigate(`/scrapbook/${id}`);
+  };
+
   return (
     <Box
       sx={{
@@ -26,6 +33,7 @@ const ScrapbookDisplay = ({ scrapbooks }) => {
       >
         {scrapbooks.map((scrapbook, index) => (
           <Card
+            onClick={() => getScrapbook(scrapbook.id)}
             key={index}
             sx={{
               width: { xs: 200, sm: 250, md: 300 },

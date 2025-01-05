@@ -1,15 +1,59 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { styled } from '@mui/material/styles';
 import { Modal, Box, Typography, Input, InputLabel, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
 
-const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, buttonStyle }) => {
+const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, buttonStyle, user }) => {
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [thumbnail, setThumbnail] = useState('');
   const [background, setBackground] = useState('white');
 
-  const handleBackground = (e, newBackground) => {
-    if (newBackground !== null) {
-      setBackground(newBackground);
+  const handleThumbnail = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setThumbnail(reader.result);
+      }
     }
+  };
+
+  const CreateScrapbook = async () => {
+    try {
+      const data = {
+        email: user,
+        name: name,
+        background: background,
+        thumbnail: thumbnail,
+      };
+
+      const res = await fetch(`http://localhost:5001/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status}`);
+      }
+
+      onClose();
+
+      const responseData = await res.json();
+      navigate(`/scrapbook/${responseData.id}`);
+    } catch (error) {
+      console.error("Error creating scrapbook:", error);
+    }
+  };
+
+  const handleBackground = (e, newBackground) => {
+    if (newBackground !== null) setBackground(newBackground);
   };
 
   const modalStyle = {
@@ -64,14 +108,9 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
     transition: "background-color 0.3s",
     borderRadius: "15px",
     fontSize: { xs: "0.6rem", sm: "0.8rem", md: "1rem" },
-    color: darkMode
-      ? darkTheme.palette.background.default
-      : lightTheme.palette.background.default,
-    backgroundColor: darkMode
-      ? darkTheme.palette.text.primary
-      : lightTheme.palette.text.primary,
+    color: darkMode ? darkTheme.palette.background.default : lightTheme.palette.background.default,
+    backgroundColor: darkMode ? darkTheme.palette.text.primary : lightTheme.palette.text.primary,
   });
-
 
   return (
     <Modal
@@ -87,11 +126,7 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
 
         <InputLabel
           htmlFor="scrapbook-name"
-          sx={{
-            fontSize: '1.5rem',
-            color: 'text.primary',
-            marginBottom: 2
-          }}
+          sx={{ fontSize: '1.5rem', color: 'text.primary', marginBottom: 2 }}
         >
           Name
         </InputLabel>
@@ -104,31 +139,27 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
             backgroundColor: 'background.default',
             color: 'text.primary',
           }}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
 
         <Button
           component="label"
-          role={undefined}
           variant="contained"
           tabIndex={-1}
-          sx={getButtonStyles}
+          sx={getButtonStyles()}
         >
           Add Thumbnail
           <VisuallyHiddenInput
             type="file"
-            onChange={(event) => console.log(event.target.files)}
-            multiple
+            onChange={handleThumbnail}
             accept="image/*"
           />
         </Button>
 
         <InputLabel
           htmlFor="scrapbook-background"
-          sx={{
-            fontSize: '1.5rem',
-            color: 'text.primary',
-            marginBottom: 2
-          }}
+          sx={{ fontSize: '1.5rem', color: 'text.primary', marginBottom: 2 }}
         >
           Background
         </InputLabel>
@@ -139,30 +170,10 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
           onChange={handleBackground}
           sx={{ marginBottom: 3 }}
         >
-          <ColorToggleButton
-            value="white"
-            selectedColor="#eeeeee"
-            unselectedColor="#eeeeee"
-            iconColor="#000"
-          />
-          <ColorToggleButton
-            value="light-brown"
-            selectedColor="#d4b38e"
-            unselectedColor="#d4b38e"
-            iconColor="#000"
-          />
-          <ColorToggleButton
-            value="dark-brown"
-            selectedColor="#76573d"
-            unselectedColor="#76573d"
-            iconColor="#fff"
-          />
-          <ColorToggleButton
-            value="black"
-            selectedColor="#060a09"
-            unselectedColor="#060a09"
-            iconColor="#fff"
-          />
+          <ColorToggleButton value="white" selectedColor="#eeeeee" unselectedColor="#eeeeee" iconColor="#000" />
+          <ColorToggleButton value="light-brown" selectedColor="#d4b38e" unselectedColor="#d4b38e" iconColor="#000" />
+          <ColorToggleButton value="dark-brown" selectedColor="#76573d" unselectedColor="#76573d" iconColor="#fff" />
+          <ColorToggleButton value="black" selectedColor="#060a09" unselectedColor="#060a09" iconColor="#fff" />
         </ToggleButtonGroup>
 
         <Button
@@ -171,6 +182,7 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
             position: "relative",
           }}
           variant="contained"
+          onClick={CreateScrapbook}
         >
           Create
         </Button>

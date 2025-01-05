@@ -1,22 +1,22 @@
-import React, { useContext, useEffect, useState } from "react";
-import AuthContext from "../../context/AuthContext";
+import React, { useEffect, useState } from "react";
 import { ThemeProvider, CssBaseline, Typography, Button } from "@mui/material";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import CreateScrapbookModal from "./CreateScrapbookModal";
 import ScrapbookDisplay from "./ScrapbookDisplay";
 import DarkModeButton from "../Theme/DarkModeButton";
 import { darkTheme, lightTheme } from "../Theme/theme";
-import DarkModeContext from "../../context/DarkModeContext";
+import useDarkMode from "../../context/useDarkMode";
+import useAuth from "../../context/useAuth";
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
   const [scrapbooks, setScrapbooks] = useState([]);
-  const { darkMode } = useContext(DarkModeContext);
-  const { logout } = useContext(AuthContext);
+  const { darkMode } = useDarkMode();
+  const { logout, user } = useAuth();
 
   const fetchScrapbooks = async () => {
     try {
-      const res = await fetch(`http://localhost:5001/scrapbooks`, {
+      const res = await fetch(`http://localhost:5001/scrapbooks?email=${user}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -107,6 +107,7 @@ const Dashboard = () => {
         darkTheme={darkTheme}
         lightTheme={lightTheme}
         buttonStyle={getTopButtonStyles}
+        user={user}
       />
 
       <Button

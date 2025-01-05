@@ -1,12 +1,12 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Button } from "@mui/material";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import DarkModeContext from "../../context/DarkModeContext";
 import { darkTheme, lightTheme } from "./theme";
+import useDarkMode from "../../context/useDarkMode";
 
 const DarkModeButton = () => {
-  const { darkMode, toggleDarkMode } = useContext(DarkModeContext);
+  const { darkMode, toggleDarkMode } = useDarkMode();
 
   const getButtonStyles = () => ({
     position: "fixed",

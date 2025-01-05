@@ -18,7 +18,7 @@ const App = () => {
           <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="login" />} />
           <Route path="/signup" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signin type="singup" />} />
           <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Landing />} />
-          <Route path="/scrapbook" element={isAuthenticated ? <Scrapbook /> : <Landing />} />
+          <Route path="/scrapbook/:id" element={isAuthenticated ? <Scrapbook /> : <Landing />} />
         </Routes>
       </Router>
     </DarkModeProvider>

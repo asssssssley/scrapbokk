@@ -41,7 +41,7 @@ const Signin = ({ type }) => {
 
       const data = await res.json();
       if (res.ok) {
-        login();
+        login(data.user);
         navigate("/dashboard");
       } else {
         console.error("Backend error:", data.error);
