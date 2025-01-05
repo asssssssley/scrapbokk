@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from "react-router";
 import { Drawer, Box, ListItem, ListItemIcon, Typography } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
@@ -6,7 +6,7 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ShareIcon from '@mui/icons-material/Share';
 import DownloadIcon from '@mui/icons-material/Download';
-import DarkModeContext from '../../context/DarkModeContext';
+import useDarkMode from "../../context/useDarkMode";
 import { darkTheme, lightTheme } from '../Theme/theme';
 import DrawerToggleButton from './DrawerToggleButton';
 import Elements from './Elements';
@@ -16,7 +16,7 @@ const DrawerComponent = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [isElement, setIsElement] = useState(true);
-  const { darkMode } = useContext(DarkModeContext);
+  const { darkMode } = useDarkMode();
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -27,11 +27,11 @@ const DrawerComponent = () => {
   };
 
   const handleShareButton = () => {
-    console.log('share');
+    console.log('share!');
   };
 
   const handleUploadButton = () => {
-    console.log('download');
+    console.log('download!');
   };
 
   const iconStyle = () => ({

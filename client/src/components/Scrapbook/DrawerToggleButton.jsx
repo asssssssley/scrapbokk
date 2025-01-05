@@ -3,10 +3,10 @@ import { IconButton } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { darkTheme, lightTheme } from '../Theme/theme';
-import DarkModeContext from '../../context/DarkModeContext';
+import useDarkMode from "../../context/useDarkMode";
 
 const DrawerToggleButton = ({ open, toggleDrawer }) => {
-  const { darkMode } = React.useContext(DarkModeContext);
+  const { darkMode } = useDarkMode();
 
   const iconStyle = {
     fontSize: '50px',
