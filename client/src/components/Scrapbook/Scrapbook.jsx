@@ -15,15 +15,40 @@ import useAuth from "../../context/useAuth";
 import ErrorPage from "../Error/ErrorPage";
 import Slide from "./Slide";
 import EditIcon from "@mui/icons-material/Edit";
-import CreateScrapbookModal from '../Dashboard/CreateScrapbookModal';
+import CreateScrapbookModal from "../Dashboard/CreateScrapbookModal";
+import Preview from "./Preview";
 
 const Scrapbook = () => {
   const { darkMode } = useDarkMode();
   const { id } = useParams();
-  const [scrapbook, setScrapbook] = useState(null);
-  const [error, setError] = useState(null);
   const { user } = useAuth();
+  const [scrapbook, setScrapbook] = useState({
+    title: "Loading...",
+    color: "",
+    pages: [],
+  });
+  const [page, setPage] = useState("1");
+  const [error, setError] = useState(null);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
+
+  const { title, color, pages } = scrapbook;
+
+  const getColors = () => {
+    switch (color) {
+      case "white":
+        return { backgroundColor: "#eeeeee", textColor: "black" };
+      case "light-brown":
+        return { backgroundColor: "#d4b38e", textColor: "black" };
+      case "dark-brown":
+        return { backgroundColor: "#76573d", textColor: "white" };
+      case "black":
+        return { backgroundColor: "#060a09", textColor: "white" };
+      default:
+        return { backgroundColor: "#ffffff", textColor: "black" };
+    }
+  };
+
+  const { backgroundColor, textColor } = getColors();
 
   const iconStyle = {
     fontSize: "30px",
@@ -68,6 +93,10 @@ const Scrapbook = () => {
     setScrapbook((prev) => ({ ...prev, ...updatedData }));
   };
 
+  const handlePageClick = (selectedPage) => {
+    setPage(selectedPage);
+  };
+
   if (error) {
     return <ErrorPage />;
   }
@@ -75,17 +104,26 @@ const Scrapbook = () => {
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
-      <Box display="flex" justifyContent="center" alignItems="center" width="100%">
-        <Typography variant="h4">
-          {scrapbook ? scrapbook.title : "Loading..."}
-        </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" width="100%" margin="15px">
+        <Typography variant="h4">{title}</Typography>
         <IconButton onClick={handleEditModalOpen}>
           <EditIcon sx={iconStyle} />
         </IconButton>
       </Box>
+      <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+        <Slide page={page} backgroundColor={backgroundColor} textColor={textColor} />
+      </Box>
+      <Box display="flex" justifyContent="center" alignItems="center" width="100%">
+        {/*<Preview
+          pages={pages}
+          page={page}
+          backgroundColor={backgroundColor}
+          textColor={textColor}
+          onPageClick={handlePageClick}
+        />*/}
+      </Box>
       <DrawerComponent />
       <DarkModeButton />
-      <Slide color={scrapbook ? scrapbook.color : ""} />
       {scrapbook && (
         <CreateScrapbookModal
           open={isEditModalOpen}
@@ -95,6 +133,7 @@ const Scrapbook = () => {
           lightTheme={lightTheme}
           user={user}
           mode="update"
+          onScrapbookUpdate={handleScrapbookUpdate}
         />
       )}
     </ThemeProvider>
