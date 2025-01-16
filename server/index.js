@@ -4,7 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { checkAuth } = require('./src/helper');
 const { signin, logout } = require("./src/auth");
-const { getScrapbook, getScrapbooks, createScrapbook, updateScrapbook, deleteScrapbook } = require("./src/user");
+const { getScrapbook, getScrapbooks, createScrapbook, updateScrapbook, deleteScrapbook, uploadCustomAssets, getCustomAssets } = require("./src/user");
 
 const app = express();
 
@@ -40,6 +40,8 @@ app.get("/scrapbooks", getScrapbooks);
 app.post("/create", createScrapbook);
 app.post("/update", updateScrapbook);
 app.delete("/scrapbook", deleteScrapbook);
+app.post("/upload", uploadCustomAssets);
+app.get("/assets", getCustomAssets);
 
 const PORT = 5001;
 app.listen(PORT, () => {

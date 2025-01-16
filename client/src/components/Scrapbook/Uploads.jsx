@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, styled } from '@mui/material';
+import { darkTheme, lightTheme } from '../Theme/theme';
+import useDarkMode from "../../context/useDarkMode";
+import imageCompression from 'browser-image-compression';
+import useAuth from "../../context/useAuth";
+import { useParams } from "react-router-dom";
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -14,22 +19,116 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const Uploads = () => {
+  const { user } = useAuth();
+  const { id } = useParams();
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const files = [
-    'location.svg', 'frame-1.svg', 'frame-2.svg', 'flower-1.svg', 'flower-2.svg',
-    'flower-3.svg', 'flower-4.svg', 'bow-and-arrow.svg', 'butterfly.svg', 'suitcase.svg',
-    'sugar.svg', 'magic.svg', 'gift.svg', 'longan.svg', 'trumpet.svg', 'bell.svg', 'mushroom.svg'
-  ];
+  const { isDarkMode } = useDarkMode();
+  const currentTheme = !isDarkMode ? darkTheme : lightTheme;
 
-  const handleFileUpload = (event) => {
-    const uploaded = event.target.files;
-    setUploadedFiles([...uploadedFiles, ...uploaded]);
-    console.log(uploaded);
+  useEffect(() => {
+    const fetchCustomAssets = async () => {
+      try {
+        const url = `http://localhost:5001/assets?email=${user}&id=${id}`;
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status}`);
+        }
+
+        const responseData = await res.json();
+        setUploadedFiles(responseData.assets || []);
+      } catch (error) {
+        console.error('Error fetching custom assets:', error);
+      }
+    };
+
+    fetchCustomAssets();
+  }, [id]);
+
+  const handleFileUpload = async (event) => {
+    const files = event.target.files;
+
+    if (files.length > 0) {
+      const filePromises = Array.from(files).map(async (file) => {
+        try {
+          const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 800,
+            useWebWorker: true,
+          };
+
+          const compressedFile = await imageCompression(file, options);
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              resolve(reader.result);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(compressedFile);
+          });
+        } catch (error) {
+          console.error('Error compressing file:', error);
+        }
+      });
+
+      try {
+        const fileArray = await Promise.all(filePromises);
+
+        const data = {
+          email: user,
+          id,
+          assets: fileArray,
+        };
+
+        const url = 'http://localhost:5001/upload';
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(data),
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status}`);
+        }
+
+        const responseData = await res.json();
+        setUploadedFiles((prev) => [
+          ...prev,
+          ...fileArray,
+        ]);
+      } catch (error) {
+        console.error('Error uploading files:', error);
+      }
+    }
   };
 
+  const containerStyle = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+  };
+
+  const itemStyle = {
+    width: '100px',
+    height: 'auto',
+    padding: '5px',
+    objectFit: 'contain',
+  };
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Button
         component="label"
         variant="contained"
@@ -37,9 +136,15 @@ const Uploads = () => {
           padding: "10px",
           marginTop: "20px",
           fontSize: "1rem",
+          backgroundColor: currentTheme.palette.background.default,
+          color: currentTheme.palette.text.primary,
+          '&:hover': {
+            backgroundColor: currentTheme.palette.text.primary,
+            color: currentTheme.palette.background.default,
+          },
         }}
       >
-        Uploads
+        Upload
         <VisuallyHiddenInput
           type="file"
           onChange={handleFileUpload}
@@ -48,16 +153,14 @@ const Uploads = () => {
         />
       </Button>
 
-      {/* Display uploaded files */}
       <div style={{ marginTop: '20px' }}>
-        {uploadedFiles.length > 0 && (
-          <h3>Uploaded Files:</h3>
-        )}
-        {uploadedFiles.length > 0 && uploadedFiles.map((file, index) => (
-          <div key={index}>
-            <p>{file.name}</p>
-          </div>
-        ))}
+        <div style={containerStyle}>
+          {uploadedFiles.map((file, index) => (
+            <div key={index} style={{ display: 'flex', justifyContent: 'center'}}>
+              <img src={file} alt={`Uploaded file ${index}`} style={itemStyle} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

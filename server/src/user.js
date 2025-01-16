@@ -69,6 +69,7 @@ const createScrapbook = (req, res) => {
     title: name,
     img: thumbnail,
     color: background,
+    customAssets: [],
     pages: []
   };
 
@@ -154,5 +155,79 @@ const deleteScrapbook = (req, res) => {
   return res.status(200).json({ message: "Scrapbook deleted successfully" });
 };
 
+const uploadCustomAssets = (req, res) => {
+  const { email, id, assets } = req.body;
 
-module.exports = { getScrapbooks, getScrapbook, createScrapbook, updateScrapbook, deleteScrapbook };
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  if (!id) {
+    return res.status(400).json({ error: "Scrapbook ID is required" });
+  }
+
+  if (!assets || !Array.isArray(assets)) {
+    return res.status(400).json({ error: "Assets must be an array" });
+  }
+
+  const db = readDatabase();
+  const user = db.users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+
+  if (!scrapbook) {
+    return res.status(404).json({ error: "Scrapbook not found" });
+  }
+
+  if (!user.scrapbooks.includes(id)) {
+    return res.status(403).json({ error: "You do not have access to this scrapbook" });
+  }
+
+  scrapbook.customAssets.push(...assets);
+
+  writeDatabase(db);
+
+  return res.status(200).json({
+    message: "Custom assets uploaded successfully",
+    assets: scrapbook.customAssets,
+  });
+};
+
+const getCustomAssets = (req, res) => {
+  const { email, id } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  if (!id) {
+    return res.status(400).json({ error: "Scrapbook ID is required" });
+  }
+
+  const db = readDatabase();
+  const user = db.users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const scrapbookData = db.scrapbooks.find((s) => s.id === id);
+
+  if (!scrapbookData) {
+    return res.status(404).json({ error: "Scrapbook not found" });
+  }
+
+  if (!user.scrapbooks.includes(id)) {
+    return res.status(403).json({ error: "You do not have access to this scrapbook" });
+  }
+
+  return res.status(200).json({
+    assets: scrapbookData.customAssets || [],
+  });
+};
+
+module.exports = { getScrapbooks, getScrapbook, createScrapbook, updateScrapbook, deleteScrapbook, uploadCustomAssets, getCustomAssets };
