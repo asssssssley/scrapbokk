@@ -110,4 +110,49 @@ const updateScrapbook = (req, res) => {
   return res.status(201).json({ message: "Scrapbook updated successfully", id: id });
 };
 
-module.exports = { getScrapbooks, getScrapbook, createScrapbook, updateScrapbook };
+const deleteScrapbook = (req, res) => {
+  const { email, id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Scrapbook ID is required" });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  const db = readDatabase();
+  const user = db.users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  if (!user.scrapbooks.includes(id)) {
+    return res.status(403).json({ error: "You do not have access to this scrapbook" });
+  }
+
+  const usersWithAccess = db.users.filter((u) => u.scrapbooks.includes(id));
+
+  if (usersWithAccess.length > 1) {
+    user.scrapbooks = user.scrapbooks.filter(scrapbookId => scrapbookId !== id);
+
+    writeDatabase(db);
+
+    return res.status(200).json({ message: "Scrapbook removed from your list but still available for others" });
+  }
+
+  user.scrapbooks = user.scrapbooks.filter(scrapbookId => scrapbookId !== id);
+
+  const scrapbookIndex = db.scrapbooks.findIndex((s) => s.id === id);
+  if (scrapbookIndex !== -1) {
+    db.scrapbooks.splice(scrapbookIndex, 1);
+  }
+
+  writeDatabase(db);
+
+  return res.status(200).json({ message: "Scrapbook deleted successfully" });
+};
+
+
+module.exports = { getScrapbooks, getScrapbook, createScrapbook, updateScrapbook, deleteScrapbook };

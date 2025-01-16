@@ -1,14 +1,44 @@
-import React from 'react';
-import { Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
 import thumbnailImg from "../../assets/thumbnail-placeholder.jpg";
 import { useNavigate } from 'react-router-dom';
 
-const ScrapbookDisplay = ({ scrapbooks }) => {
+const ScrapbookDisplay = ({ scrapbooks, onDelete }) => {
   const navigate = useNavigate();
+  const [selectedScrapbook, setSelectedScrapbook] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const getScrapbook = (id) => {
     navigate(`/scrapbook/${id}`);
   };
+
+  const handleRightClick = (event, scrapbook) => {
+    event.preventDefault();
+    setSelectedScrapbook(scrapbook);
+    setMousePosition({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleDelete = () => {
+    if (onDelete && selectedScrapbook) {
+      onDelete(selectedScrapbook.id);
+    }
+    setSelectedScrapbook(null);
+  };
+
+  // Close the menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectedScrapbook && !event.target.closest('.context-menu')) {
+        setSelectedScrapbook(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [selectedScrapbook]);
 
   return (
     <Box
@@ -33,6 +63,7 @@ const ScrapbookDisplay = ({ scrapbooks }) => {
         {scrapbooks.map((scrapbook, index) => (
           <Card
             onClick={() => getScrapbook(scrapbook.id)}
+            onContextMenu={(e) => handleRightClick(e, scrapbook)}
             key={index}
             sx={{
               width: { xs: 200, sm: 250, md: 300 },
@@ -64,6 +95,29 @@ const ScrapbookDisplay = ({ scrapbooks }) => {
           </Card>
         ))}
       </Box>
+
+      {/* Delete button */}
+      {selectedScrapbook && (
+        <Button
+          className="context-menu"
+          onClick={handleDelete}
+          sx={{
+            position: 'absolute',
+            top: mousePosition.y + 10,
+            left: mousePosition.x + 10,
+            backgroundColor: 'red',
+            color: 'white',
+            padding: '0.5rem 1rem',
+            borderRadius: '5px',
+            boxShadow: 3,
+            '&:hover': {
+              backgroundColor: 'darkred',
+            },
+          }}
+        >
+          Delete
+        </Button>
+      )}
     </Box>
   );
 };

@@ -39,6 +39,30 @@ const Dashboard = () => {
     fetchScrapbooks();
   }, []);
 
+  const handleDeleteScrapbook = async (scrapbookId) => {
+    try {
+      const res = await fetch("http://localhost:5001/scrapbook", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user,
+          id: scrapbookId,
+        }),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to delete scrapbook: ${res.status}`);
+      }
+
+      setScrapbooks(scrapbooks.filter((scrapbook) => scrapbook.id !== scrapbookId));
+    } catch (error) {
+      console.error("Error deleting scrapbook:", error);
+    }
+  };
+
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -136,7 +160,7 @@ const Dashboard = () => {
         Scrapbook
       </Typography>
 
-      <ScrapbookDisplay scrapbooks={scrapbooks} />
+      <ScrapbookDisplay scrapbooks={scrapbooks} onDelete={handleDeleteScrapbook} />
     </ThemeProvider>
   );
 };
