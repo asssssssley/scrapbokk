@@ -13,7 +13,8 @@ const ScrapbookModal = ({
   lightTheme,
   user,
   mode = "create",
-  scrapbook = {}
+  scrapbook = {},
+  onScrapbookUpdate,
 }) => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -83,7 +84,7 @@ const ScrapbookModal = ({
 
       const responseData = await res.json();
       navigate(`/scrapbook/${responseData.id}`);
-      window.location.reload();
+      onScrapbookUpdate({title: name, color: background});
 
       onClose();
     } catch (error) {

@@ -132,6 +132,7 @@ const Dashboard = () => {
         lightTheme={lightTheme}
         buttonStyle={getTopButtonStyles}
         user={user}
+        onScrapbookUpdate={() => {}}
       />
 
       <Button

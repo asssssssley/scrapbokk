@@ -1,48 +1,41 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
-const Slide = ({ color }) => {
-  let backgroundColor;
-
-  if (color === 'white') {
-    backgroundColor = '#eeeeee';
-  } else if (color === 'light-brown') {
-    backgroundColor = '#d4b38e';
-  } else if (color === 'dark-brown') {
-    backgroundColor = '#76573d';
-  } else if (color === 'black') {
-    backgroundColor = '#060a09';
-  } else {
-    backgroundColor = '#ffffff';
-  }
-
+const Slide = ({ backgroundColor, textColor, page }) => {
   return (
     <Box
       sx={{
         width: {
-          xs: '200px',
-          sm: '500px',
-          md: '700px',
-          lg: '900px',
+          xs: '600px',
+          sm: '800px',
+          md: '1000px',
+          lg: '1200px',
         },
         height: {
-          xs: '100px',
-          sm: '300px',
-          md: '500px',
-          lg: '700px',
+          xs: '200px',
+          sm: '400px',
+          md: '600px',
+          lg: '800px',
         },
-        margin: 'auto',
         backgroundColor: backgroundColor,
-        borderRadius: '8px',
+        borderRadius: '10px',
         boxShadow: 3,
-        padding: '400px',
-        display: 'fixed',
-        postiton: 'fixed',
-        marginLeft: '500px',
-        justifyContent: 'center',
-        alignItems: 'center',
+        margin: '15px',
+        position: 'relative',
       }}
-    />
+    >
+      <Typography
+        sx={{
+          position: 'absolute',
+          bottom: '10px',
+          left: '10px',
+          color: textColor,
+          fontSize: '16px',
+        }}
+      >
+        {page}
+      </Typography>
+    </Box>
   );
 };
 
