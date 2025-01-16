@@ -70,7 +70,7 @@ const createScrapbook = (req, res) => {
     img: thumbnail,
     color: background,
     customAssets: [],
-    pages: []
+    pages: [{ number: "1", assets: {} }]
   };
 
   user.scrapbooks.push(newScrapbook.id);
@@ -230,4 +230,143 @@ const getCustomAssets = (req, res) => {
   });
 };
 
-module.exports = { getScrapbooks, getScrapbook, createScrapbook, updateScrapbook, deleteScrapbook, uploadCustomAssets, getCustomAssets };
+const addPage = (req, res) => {
+  const { email, id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Scrapbook ID is required" });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  const db = readDatabase();
+  const user = db.users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+
+  if (!scrapbook) {
+    return res.status(404).json({ error: "Scrapbook not found" });
+  }
+
+  if (!user.scrapbooks.includes(id)) {
+    return res.status(403).json({ error: "You do not have access to this scrapbook" });
+  }
+
+  const newPage = {
+    number: (scrapbook.pages.length + 1).toString(),
+    assets: {},
+  };
+
+  scrapbook.pages.push(newPage);
+
+  writeDatabase(db);
+
+  return res.status(201).json({ message: "Page added successfully", page: newPage });
+};
+
+const deletePage = (req, res) => {
+  const { email, id, pageNumber } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Scrapbook ID is required" });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  if (!pageNumber) {
+    return res.status(400).json({ error: "Page number is required" });
+  }
+
+  const db = readDatabase();
+  const user = db.users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+
+  if (!scrapbook) {
+    return res.status(404).json({ error: "Scrapbook not found" });
+  }
+
+  if (!user.scrapbooks.includes(id)) {
+    return res.status(403).json({ error: "You do not have access to this scrapbook" });
+  }
+
+  const pageIndex = scrapbook.pages.findIndex((p) => p.number === pageNumber);
+
+  if (pageIndex === -1) {
+    return res.status(404).json({ error: "Page not found" });
+  }
+
+  scrapbook.pages.splice(pageIndex, 1);
+
+  scrapbook.pages.forEach((page, index) => {
+    page.number = (index + 1).toString();
+  });
+
+  writeDatabase(db);
+
+  return res.status(200).json({ message: "Page deleted successfully" });
+};
+
+const rearrangePages = (req, res) => {
+  const { email, id, newPageOrder } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Scrapbook ID is required" });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  if (!newPageOrder || !Array.isArray(newPageOrder)) {
+    return res.status(400).json({ error: "New page order is required and must be an array" });
+  }
+
+  const db = readDatabase();
+  const user = db.users.find((u) => u.email === email);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+
+  if (!scrapbook) {
+    return res.status(404).json({ error: "Scrapbook not found" });
+  }
+
+  if (!user.scrapbooks.includes(id)) {
+    return res.status(403).json({ error: "You do not have access to this scrapbook" });
+  }
+
+  if (newPageOrder.length !== scrapbook.pages.length) {
+    return res.status(400).json({ error: "New page order does not match the number of pages in the scrapbook" });
+  }
+
+  scrapbook.pages = newPageOrder.map((pageNumber) =>
+    scrapbook.pages.find((page) => page.number === pageNumber)
+  );
+
+  scrapbook.pages.forEach((page, index) => {
+    page.number = (index + 1).toString();
+  });
+
+  writeDatabase(db);
+
+  return res.status(200).json({ message: "Pages rearranged successfully", pages: scrapbook.pages });
+};
+
+
+module.exports = { getScrapbooks, getScrapbook, createScrapbook, updateScrapbook, deleteScrapbook, uploadCustomAssets, getCustomAssets, addPage, deletePage, rearrangePages };
