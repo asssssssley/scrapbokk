@@ -1,36 +1,74 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { styled } from '@mui/material/styles';
 import { Modal, Box, Typography, Input, InputLabel, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
+import imageCompression from 'browser-image-compression';
 
-const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, buttonStyle, user }) => {
+const ScrapbookModal = ({
+  open,
+  onClose,
+  darkMode,
+  darkTheme,
+  lightTheme,
+  user,
+  mode = "create",
+  scrapbook = {}
+}) => {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [thumbnail, setThumbnail] = useState('');
-  const [background, setBackground] = useState('white');
+  const [name, setName] = useState("");
+  const [thumbnail, setThumbnail] = useState("");
+  const [background, setBackground] = useState("white");
 
-  const handleThumbnail = (e) => {
+  useEffect(() => {
+    if (mode === "update" && scrapbook) {
+      setName(scrapbook.title || "");
+      setThumbnail(scrapbook.img || "");
+      setBackground(scrapbook.color || "white");
+    }
+  }, [mode, scrapbook]);
+
+  const handleThumbnail = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        setThumbnail(reader.result);
+      try {
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+
+        const compressedFile = await imageCompression(file, options);
+
+        const reader = new FileReader();
+        reader.readAsDataURL(compressedFile);
+        reader.onloadend = () => {
+          setThumbnail(reader.result);
+        };
+      } catch (error) {
+        console.error('Error compressing file:', error);
       }
     }
   };
 
-  const CreateScrapbook = async () => {
+  const handleSubmit = async () => {
     try {
       const data = {
         email: user,
-        name: name,
-        background: background,
-        thumbnail: thumbnail,
+        name,
+        background,
+        thumbnail,
       };
 
-      const res = await fetch(`http://localhost:5001/create`, {
+      if (mode === "update") {
+        data.id = scrapbook.id;
+      }
+
+      const url = mode === "create"
+        ? `http://localhost:5001/create`
+        : `http://localhost:5001/update`;
+
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,12 +81,13 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
         throw new Error(`Error: ${res.status}`);
       }
 
-      onClose();
-
       const responseData = await res.json();
       navigate(`/scrapbook/${responseData.id}`);
+      window.location.reload();
+
+      onClose();
     } catch (error) {
-      console.error("Error creating scrapbook:", error);
+      console.error(`Error ${mode === "create" ? "creating" : "updating"} scrapbook:`, error);
     }
   };
 
@@ -112,16 +151,24 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
     backgroundColor: darkMode ? darkTheme.palette.text.primary : lightTheme.palette.text.primary,
   });
 
+
+  const handleModalClose = () => {
+    setName(scrapbook.title || "");
+    setThumbnail(scrapbook.img || "");
+    setBackground(scrapbook.color || "white");
+    onClose();
+  };
+
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleModalClose}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
       <Box sx={modalStyle}>
         <Typography id="modal-modal-title" variant="h4" sx={{ marginBottom: 2 }}>
-          Create Scrapbook
+          {mode === "create" ? "Create Scrapbook" : "Update Scrapbook"}
         </Typography>
 
         <InputLabel
@@ -149,7 +196,7 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
           tabIndex={-1}
           sx={getButtonStyles()}
         >
-          Add Thumbnail
+          {thumbnail ? "Change Thumbnail" : "Add Thumbnail"}
           <VisuallyHiddenInput
             type="file"
             onChange={handleThumbnail}
@@ -178,17 +225,17 @@ const CreateScrapbookModal = ({ open, onClose, darkMode, darkTheme, lightTheme, 
 
         <Button
           sx={{
-            ...buttonStyle(darkMode, darkTheme, lightTheme),
+            ...getButtonStyles(),
             position: "relative",
           }}
           variant="contained"
-          onClick={CreateScrapbook}
+          onClick={handleSubmit}
         >
-          Create
+          {mode === "create" ? "Create" : "Update"}
         </Button>
       </Box>
     </Modal>
   );
 };
 
-export default CreateScrapbookModal;
+export default ScrapbookModal;

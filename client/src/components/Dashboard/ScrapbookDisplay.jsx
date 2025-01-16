@@ -22,13 +22,12 @@ const ScrapbookDisplay = ({ scrapbooks }) => {
         sx={{
           display: 'grid',
           width: '100%',
-          maxWidth: '1200px',
           gridTemplateColumns: {
             xs: 'repeat(2, 1fr)',
             sm: 'repeat(3, 1fr)',
             md: 'repeat(4, 1fr)',
           },
-          gap: { xs: '1em', sm: '2em', md: '4em' },
+          justifyContent: 'center',
         }}
       >
         {scrapbooks.map((scrapbook, index) => (
