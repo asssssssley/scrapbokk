@@ -1,14 +1,14 @@
 const { readDatabase, writeDatabase } = require('./helper');
 
 const getScrapbooks = (req, res) => {
-  const { email } = req.query;
+  const { userId } = req.query;
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
@@ -16,7 +16,7 @@ const getScrapbooks = (req, res) => {
 
   const userScrapbooks = user.scrapbooks
     .map((scrapbookId) =>
-      db.scrapbooks.find((scrapbook) => scrapbook.id === scrapbookId.toString())
+      db.scrapbooks.find((scrapbook) => scrapbook.id === scrapbookId)
     )
     .filter(Boolean);
 
@@ -24,28 +24,28 @@ const getScrapbooks = (req, res) => {
 };
 
 const getScrapbook = (req, res) => {
-  const { email, id } = req.query;
+  const { userId, scrapbookId } = req.query;
 
-  if (!id) {
+  if (!scrapbookId) {
     return res.status(400).json({ error: "Scrapbook ID is required" });
   }
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  if (!user.scrapbooks.includes(id)) {
+  if (!user.scrapbooks.includes(scrapbookId)) {
     return res.status(403).json({ error: "You do not have access to this scrapbook" });
   }
 
-  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+  const scrapbook = db.scrapbooks.find((s) => s.id === scrapbookId);
 
   if (!scrapbook) {
     return res.status(404).json({ error: "Scrapbook not found" });
@@ -55,97 +55,102 @@ const getScrapbook = (req, res) => {
 };
 
 const createScrapbook = (req, res) => {
-  const { email, name, thumbnail, background } = req.body;
+  const { userId, title, img, color } = req.body;
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
   const newScrapbook = {
-    id: (db.scrapbooks.length + 1).toString(),
-    title: name,
-    img: thumbnail,
-    color: background,
+    id: `${Date.now()}`,
+    title,
+    img,
+    color,
     customAssets: [],
-    pages: [{ number: "1", assets: {} }]
+    pages: [{ id: `${Date.now()}`, assets: {} }],
   };
 
   user.scrapbooks.push(newScrapbook.id);
-
   db.scrapbooks.push(newScrapbook);
 
   writeDatabase(db);
 
-  return res.status(201).json({ message: "Scrapbook created successfully", id: newScrapbook.id });
+  return res.status(201).json({
+    message: "Scrapbook created successfully",
+    id: newScrapbook.id,
+  });
 };
 
 const updateScrapbook = (req, res) => {
-  const { email, id, name, thumbnail, background } = req.body;
+  const { userId, scrapbookId, title, img, color } = req.body;
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+  const scrapbook = db.scrapbooks.find((s) => s.id === scrapbookId);
 
   if (!scrapbook) {
     return res.status(404).json({ error: "Scrapbook not found" });
   }
 
-  if (!user.scrapbooks.includes(id)) {
+  if (!user.scrapbooks.includes(scrapbookId)) {
     return res.status(403).json({ error: "You do not have access to this scrapbook" });
   }
 
-  scrapbook.title = name || scrapbook.title;
-  scrapbook.img = thumbnail || scrapbook.img;
-  scrapbook.color = background || scrapbook.color;
+  if (title) scrapbook.title = title;
+  if (img) scrapbook.img = img;
+  if (color) scrapbook.color = color;
 
   writeDatabase(db);
 
-  return res.status(201).json({ message: "Scrapbook updated successfully", id: id });
+  return res.status(200).json({
+    message: "Scrapbook updated successfully",
+    id: scrapbookId,
+  });
 };
 
 const deleteScrapbook = (req, res) => {
-  const { email, id } = req.body;
+  const { userId, scrapbookId } = req.body;
 
-  if (!id) {
+  if (!scrapbookId) {
     return res.status(400).json({ error: "Scrapbook ID is required" });
   }
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  if (!user.scrapbooks.includes(id)) {
+  if (!user.scrapbooks.includes(scrapbookId)) {
     return res.status(403).json({ error: "You do not have access to this scrapbook" });
   }
 
-  const usersWithAccess = db.users.filter((u) => u.scrapbooks.includes(id));
+  const usersWithAccess = db.users.filter((u) => u.scrapbooks.includes(scrapbookId));
 
   if (usersWithAccess.length > 1) {
-    user.scrapbooks = user.scrapbooks.filter(scrapbookId => scrapbookId !== id);
+    user.scrapbooks = user.scrapbooks.filter(id => id !== scrapbookId);
 
     writeDatabase(db);
 
     return res.status(200).json({ message: "Scrapbook removed from your list but still available for others" });
   }
 
-  user.scrapbooks = user.scrapbooks.filter(scrapbookId => scrapbookId !== id);
+  user.scrapbooks = user.scrapbooks.filter(id => id !== scrapbookId);
 
-  const scrapbookIndex = db.scrapbooks.findIndex((s) => s.id === id);
+  const scrapbookIndex = db.scrapbooks.findIndex((s) => s.id === scrapbookId);
   if (scrapbookIndex !== -1) {
     db.scrapbooks.splice(scrapbookIndex, 1);
   }
@@ -156,13 +161,13 @@ const deleteScrapbook = (req, res) => {
 };
 
 const uploadCustomAssets = (req, res) => {
-  const { email, id, assets } = req.body;
+  const { userId, scrapbookId, assets } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
-  if (!id) {
+  if (!scrapbookId) {
     return res.status(400).json({ error: "Scrapbook ID is required" });
   }
 
@@ -171,19 +176,19 @@ const uploadCustomAssets = (req, res) => {
   }
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+  const scrapbook = db.scrapbooks.find((s) => s.id === scrapbookId);
 
   if (!scrapbook) {
     return res.status(404).json({ error: "Scrapbook not found" });
   }
 
-  if (!user.scrapbooks.includes(id)) {
+  if (!user.scrapbooks.includes(scrapbookId)) {
     return res.status(403).json({ error: "You do not have access to this scrapbook" });
   }
 
@@ -198,68 +203,68 @@ const uploadCustomAssets = (req, res) => {
 };
 
 const getCustomAssets = (req, res) => {
-  const { email, id } = req.query;
+  const { userId, scrapbookId } = req.query;
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
-  if (!id) {
+  if (!scrapbookId) {
     return res.status(400).json({ error: "Scrapbook ID is required" });
   }
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const scrapbookData = db.scrapbooks.find((s) => s.id === id);
-
-  if (!scrapbookData) {
-    return res.status(404).json({ error: "Scrapbook not found" });
-  }
-
-  if (!user.scrapbooks.includes(id)) {
-    return res.status(403).json({ error: "You do not have access to this scrapbook" });
-  }
-
-  return res.status(200).json({
-    assets: scrapbookData.customAssets || [],
-  });
-};
-
-const addPage = (req, res) => {
-  const { email, id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({ error: "Scrapbook ID is required" });
-  }
-
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
-  }
-
-  const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
-
-  if (!user) {
-    return res.status(404).json({ error: "User not found" });
-  }
-
-  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+  const scrapbook = db.scrapbooks.find((s) => s.id === scrapbookId);
 
   if (!scrapbook) {
     return res.status(404).json({ error: "Scrapbook not found" });
   }
 
-  if (!user.scrapbooks.includes(id)) {
+  if (!user.scrapbooks.includes(scrapbookId)) {
+    return res.status(403).json({ error: "You do not have access to this scrapbook" });
+  }
+
+  return res.status(200).json({
+    assets: scrapbook.customAssets || [],
+  });
+};
+
+const addPage = (req, res) => {
+  const { userId, scrapbookId } = req.body;
+
+  if (!scrapbookId) {
+    return res.status(400).json({ error: "Scrapbook ID is required" });
+  }
+
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
+
+  const db = readDatabase();
+  const user = db.users.find((u) => u.email === userId);
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const scrapbook = db.scrapbooks.find((s) => s.id === scrapbookId);
+
+  if (!scrapbook) {
+    return res.status(404).json({ error: "Scrapbook not found" });
+  }
+
+  if (!user.scrapbooks.includes(scrapbookId)) {
     return res.status(403).json({ error: "You do not have access to this scrapbook" });
   }
 
   const newPage = {
-    number: (scrapbook.pages.length + 1).toString(),
+    id: `${Date.now()}`,
     assets: {},
   };
 
@@ -271,38 +276,38 @@ const addPage = (req, res) => {
 };
 
 const deletePage = (req, res) => {
-  const { email, id, pageNumber } = req.body;
+  const { userId, scrapbookId, pageId } = req.body;
 
-  if (!id) {
+  if (!scrapbookId) {
     return res.status(400).json({ error: "Scrapbook ID is required" });
   }
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
-  if (!pageNumber) {
-    return res.status(400).json({ error: "Page number is required" });
+  if (!pageId) {
+    return res.status(400).json({ error: "Page ID is required" });
   }
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+  const scrapbook = db.scrapbooks.find((s) => s.id === scrapbookId);
 
   if (!scrapbook) {
     return res.status(404).json({ error: "Scrapbook not found" });
   }
 
-  if (!user.scrapbooks.includes(id)) {
+  if (!user.scrapbooks.includes(scrapbookId)) {
     return res.status(403).json({ error: "You do not have access to this scrapbook" });
   }
 
-  const pageIndex = scrapbook.pages.findIndex((p) => p.number === pageNumber);
+  const pageIndex = scrapbook.pages.findIndex((p) => p.id === pageId);
 
   if (pageIndex === -1) {
     return res.status(404).json({ error: "Page not found" });
@@ -310,24 +315,20 @@ const deletePage = (req, res) => {
 
   scrapbook.pages.splice(pageIndex, 1);
 
-  scrapbook.pages.forEach((page, index) => {
-    page.number = (index + 1).toString();
-  });
-
   writeDatabase(db);
 
   return res.status(200).json({ message: "Page deleted successfully" });
 };
 
 const rearrangePages = (req, res) => {
-  const { email, id, newPageOrder } = req.body;
+  const { userId, scrapbookId, newPageOrder } = req.body;
 
-  if (!id) {
+  if (!scrapbookId) {
     return res.status(400).json({ error: "Scrapbook ID is required" });
   }
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+  if (!userId) {
+    return res.status(400).json({ error: "User ID is required" });
   }
 
   if (!newPageOrder || !Array.isArray(newPageOrder)) {
@@ -335,19 +336,19 @@ const rearrangePages = (req, res) => {
   }
 
   const db = readDatabase();
-  const user = db.users.find((u) => u.email === email);
+  const user = db.users.find((u) => u.email === userId);
 
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
 
-  const scrapbook = db.scrapbooks.find((s) => s.id === id);
+  const scrapbook = db.scrapbooks.find((s) => s.id === scrapbookId);
 
   if (!scrapbook) {
     return res.status(404).json({ error: "Scrapbook not found" });
   }
 
-  if (!user.scrapbooks.includes(id)) {
+  if (!user.scrapbooks.includes(scrapbookId)) {
     return res.status(403).json({ error: "You do not have access to this scrapbook" });
   }
 
@@ -355,18 +356,13 @@ const rearrangePages = (req, res) => {
     return res.status(400).json({ error: "New page order does not match the number of pages in the scrapbook" });
   }
 
-  scrapbook.pages = newPageOrder.map((pageNumber) =>
-    scrapbook.pages.find((page) => page.number === pageNumber)
+  scrapbook.pages = newPageOrder.map((pageId) =>
+    scrapbook.pages.find((page) => page.id === pageId)
   );
-
-  scrapbook.pages.forEach((page, index) => {
-    page.number = (index + 1).toString();
-  });
 
   writeDatabase(db);
 
   return res.status(200).json({ message: "Pages rearranged successfully", pages: scrapbook.pages });
 };
-
 
 module.exports = { getScrapbooks, getScrapbook, createScrapbook, updateScrapbook, deleteScrapbook, uploadCustomAssets, getCustomAssets, addPage, deletePage, rearrangePages };
