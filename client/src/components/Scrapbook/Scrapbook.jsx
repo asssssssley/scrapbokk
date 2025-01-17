@@ -17,21 +17,18 @@ import Slide from "./Slide";
 import EditIcon from "@mui/icons-material/Edit";
 import CreateScrapbookModal from "../Dashboard/CreateScrapbookModal";
 import Preview from "./Preview";
+import { getScrapbook } from "./ScrapbookCalls";
 
 const Scrapbook = () => {
   const { darkMode } = useDarkMode();
   const { id } = useParams();
   const { user } = useAuth();
-  const [scrapbook, setScrapbook] = useState({
-    title: "Loading...",
-    color: "",
-    pages: [],
-  });
-  const [page, setPage] = useState("1");
+  const [title, setTitle] = useState("Loading...");
+  const [color, setColor] = useState("");
+  const [pages, setPages] = useState([]);
+  const [page, setPage] = useState(0);
   const [error, setError] = useState(null);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
-
-  const { title, color, pages } = scrapbook;
 
   const getColors = () => {
     switch (color) {
@@ -58,31 +55,20 @@ const Scrapbook = () => {
   };
 
   useEffect(() => {
-    const fetchScrapbook = async () => {
+    const fetchScrapbookData = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5001/scrapbook?email=${user}&id=${id}`
-        );
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("Scrapbook not found");
-          } else {
-            setError("An error occurred while fetching the scrapbook");
-          }
-          return;
-        }
-
-        const data = await response.json();
-        setScrapbook(data);
+        const data = await getScrapbook(user, id);
+        setTitle(data.title);
+        setColor(data.color);
+        setPages(data.pages);
       } catch (err) {
-        setError("Failed to fetch scrapbook");
+        setError(err.message);
         console.error(err);
       }
     };
 
     if (user && id) {
-      fetchScrapbook();
+      fetchScrapbookData();
     }
   }, [user, id]);
 
@@ -90,11 +76,13 @@ const Scrapbook = () => {
   const handleEditModalClose = () => setEditModalOpen(false);
 
   const handleScrapbookUpdate = (updatedData) => {
-    setScrapbook((prev) => ({ ...prev, ...updatedData }));
+    if (updatedData.title) setTitle(updatedData.title);
+    if (updatedData.color) setColor(updatedData.color);
+    if (updatedData.pages) setPages(updatedData.pages);
   };
 
-  const handlePageClick = (selectedPage) => {
-    setPage(selectedPage);
+  const handlePageClick = (selectedIndex) => {
+    setPage(selectedIndex);
   };
 
   if (error) {
@@ -111,23 +99,23 @@ const Scrapbook = () => {
         </IconButton>
       </Box>
       <Box display="flex" justifyContent="center" alignItems="center" width="100%">
-        <Slide page={page} backgroundColor={backgroundColor} textColor={textColor} />
+        <Slide page={page + 1} backgroundColor={backgroundColor} textColor={textColor} />
       </Box>
       <Box display="flex" justifyContent="center" alignItems="center" width="100%">
       <Preview
-        scrapbook={{ pages, backgroundColor, textColor }}
+        pages={pages}
+        setPages={handleScrapbookUpdate}
         page={page}
         onPageClick={handlePageClick}
-        setScrapbook={setScrapbook}
       />
       </Box>
       <DrawerComponent />
       <DarkModeButton />
-      {scrapbook && (
+      {title && (
         <CreateScrapbookModal
           open={isEditModalOpen}
           onClose={handleEditModalClose}
-          scrapbook={scrapbook}
+          scrapbook={{ title, color, pages }}
           darkTheme={darkTheme}
           lightTheme={lightTheme}
           user={user}

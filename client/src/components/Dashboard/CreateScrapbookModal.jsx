@@ -4,6 +4,8 @@ import { styled } from '@mui/material/styles';
 import { Modal, Box, Typography, Input, InputLabel, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
 import imageCompression from 'browser-image-compression';
+import { createScrapbook, updateScrapbook } from "./DashboardCalls";
+import { useParams } from "react-router-dom";
 
 const ScrapbookModal = ({
   open,
@@ -17,19 +19,20 @@ const ScrapbookModal = ({
   onScrapbookUpdate,
 }) => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [thumbnail, setThumbnail] = useState("");
-  const [background, setBackground] = useState("white");
+  const { id } = useParams();
+  const [title, setTitle] = useState("");
+  const [img, setImg] = useState("");
+  const [color, setColor] = useState("white");
 
   useEffect(() => {
     if (mode === "update" && scrapbook) {
-      setName(scrapbook.title || "");
-      setThumbnail(scrapbook.img || "");
-      setBackground(scrapbook.color || "white");
+      setTitle(scrapbook.title || "");
+      setImg(scrapbook.img || "");
+      setColor(scrapbook.color || "white");
     }
   }, [mode, scrapbook]);
 
-  const handleThumbnail = async (e) => {
+  const handleImg = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
@@ -44,7 +47,7 @@ const ScrapbookModal = ({
         const reader = new FileReader();
         reader.readAsDataURL(compressedFile);
         reader.onloadend = () => {
-          setThumbnail(reader.result);
+          setImg(reader.result);
         };
       } catch (error) {
         console.error('Error compressing file:', error);
@@ -54,46 +57,22 @@ const ScrapbookModal = ({
 
   const handleSubmit = async () => {
     try {
-      const data = {
-        email: user,
-        name,
-        background,
-        thumbnail,
-      };
-
-      if (mode === "update") {
-        data.id = scrapbook.id;
+      if (mode === "create") {
+        const responseData = await createScrapbook(user, title, img, color);
+        navigate(`/scrapbook/${responseData.id}`);
+      } else {
+        const responseData = await updateScrapbook(user, id, title, img, color);
+        navigate(`/scrapbook/${responseData.id}`);
       }
-
-      const url = mode === "create"
-        ? `http://localhost:5001/create`
-        : `http://localhost:5001/update`;
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error(`Error: ${res.status}`);
-      }
-
-      const responseData = await res.json();
-      navigate(`/scrapbook/${responseData.id}`);
-      onScrapbookUpdate({title: name, color: background});
-
+      onScrapbookUpdate({ title, color });
       onClose();
     } catch (error) {
       console.error(`Error ${mode === "create" ? "creating" : "updating"} scrapbook:`, error);
     }
   };
 
-  const handleBackground = (e, newBackground) => {
-    if (newBackground !== null) setBackground(newBackground);
+  const handleColor = (e, newColor) => {
+    if (newColor !== null) setColor(newColor);
   };
 
   const modalStyle = {
@@ -104,8 +83,8 @@ const ScrapbookModal = ({
     width: 500,
     bgcolor: 'background.paper',
     border: '3px solid',
-    borderColor: 'text.primary',
-    color: 'text.primary',
+    borderColor: '.text.primary',
+    color: '.text.primary',
     boxShadow: 100,
     padding: 10,
     borderRadius: 5,
@@ -126,7 +105,7 @@ const ScrapbookModal = ({
         },
       }}
     >
-      {background === value && <DoneIcon sx={{ color: iconColor }} />}
+      {color === value && <DoneIcon sx={{ color: iconColor }} />}
     </ToggleButton>
   );
 
@@ -152,11 +131,10 @@ const ScrapbookModal = ({
     backgroundColor: darkMode ? darkTheme.palette.text.primary : lightTheme.palette.text.primary,
   });
 
-
   const handleModalClose = () => {
-    setName(scrapbook.title || "");
-    setThumbnail(scrapbook.img || "");
-    setBackground(scrapbook.color || "white");
+    setTitle(scrapbook.title || "");
+    setImg(scrapbook.img || "");
+    setColor(scrapbook.color || "white");
     onClose();
   };
 
@@ -173,22 +151,22 @@ const ScrapbookModal = ({
         </Typography>
 
         <InputLabel
-          htmlFor="scrapbook-name"
-          sx={{ fontSize: '1.5rem', color: 'text.primary', marginBottom: 2 }}
+          htmlFor="scrapbook-title"
+          sx={{ fontSize: '1.5rem', color: '.text.primary', marginBottom: 2 }}
         >
-          Name
+          Title
         </InputLabel>
         <Input
-          id="scrapbook-name"
+          id="scrapbook-title"
           sx={{
             padding: '10px',
             fontSize: '1.5rem',
             marginBottom: 3,
             backgroundColor: 'background.default',
-            color: 'text.primary',
+            color: '.text.primary',
           }}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
 
         <Button
@@ -197,25 +175,25 @@ const ScrapbookModal = ({
           tabIndex={-1}
           sx={getButtonStyles()}
         >
-          {thumbnail ? "Change Thumbnail" : "Add Thumbnail"}
+          {img ? "Change Thumbnail" : "Add Thumbnail"}
           <VisuallyHiddenInput
             type="file"
-            onChange={handleThumbnail}
+            onChange={handleImg}
             accept="image/*"
           />
         </Button>
 
         <InputLabel
-          htmlFor="scrapbook-background"
-          sx={{ fontSize: '1.5rem', color: 'text.primary', marginBottom: 2 }}
+          htmlFor="scrapbook-color"
+          sx={{ fontSize: '1.5rem', color: '.text.primary', marginBottom: 2 }}
         >
-          Background
+          Color
         </InputLabel>
 
         <ToggleButtonGroup
-          value={background}
+          value={color}
           exclusive
-          onChange={handleBackground}
+          onChange={handleColor}
           sx={{ marginBottom: 3 }}
         >
           <ColorToggleButton value="white" selectedColor="#eeeeee" unselectedColor="#eeeeee" iconColor="#000" />

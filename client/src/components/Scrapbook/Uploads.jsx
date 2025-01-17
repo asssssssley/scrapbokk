@@ -5,6 +5,7 @@ import useDarkMode from "../../context/useDarkMode";
 import imageCompression from 'browser-image-compression';
 import useAuth from "../../context/useAuth";
 import { useParams } from "react-router-dom";
+import { fetchCustomAssets, uploadCustomAssets } from './ScrapbookCalls';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -26,30 +27,17 @@ const Uploads = () => {
   const currentTheme = !isDarkMode ? darkTheme : lightTheme;
 
   useEffect(() => {
-    const fetchCustomAssets = async () => {
+    const loadAssets = async () => {
       try {
-        const url = `http://localhost:5001/assets?email=${user}&id=${id}`;
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          throw new Error(`Error: ${res.status}`);
-        }
-
-        const responseData = await res.json();
-        setUploadedFiles(responseData.assets || []);
+        const assets = await fetchCustomAssets(user, id);
+        setUploadedFiles(assets);
       } catch (error) {
-        console.error('Error fetching custom assets:', error);
+        console.error('Error loading assets:', error);
       }
     };
 
-    fetchCustomAssets();
-  }, [id]);
+    loadAssets();
+  }, [id, user]);
 
   const handleFileUpload = async (event) => {
     const files = event.target.files;
@@ -81,28 +69,12 @@ const Uploads = () => {
         const fileArray = await Promise.all(filePromises);
 
         const data = {
-          email: user,
-          id,
+          userId: user,
+          scrapbookId: id,
           assets: fileArray,
         };
 
-        const url = 'http://localhost:5001/upload';
-
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify(data),
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          throw new Error(`Error: ${res.status}`);
-        }
-
-        const responseData = await res.json();
+        const res = await uploadCustomAssets(data);
         setUploadedFiles((prev) => [
           ...prev,
           ...fileArray,

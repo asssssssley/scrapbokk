@@ -7,6 +7,7 @@ import DarkModeButton from "../Theme/DarkModeButton";
 import { darkTheme, lightTheme } from "../Theme/theme";
 import useDarkMode from "../../context/useDarkMode";
 import useAuth from "../../context/useAuth";
+import { fetchScrapbooks, deleteScrapbook } from "./DashboardCalls";
 
 const Dashboard = () => {
   const [open, setOpen] = useState(false);
@@ -14,55 +15,13 @@ const Dashboard = () => {
   const { darkMode } = useDarkMode();
   const { logout, user } = useAuth();
 
-  const fetchScrapbooks = async () => {
-    try {
-      const res = await fetch(`http://localhost:5001/scrapbooks?email=${user}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error(`${res.status}`);
-      }
-
-      const data = await res.json();
-      setScrapbooks(data);
-    } catch (error) {
-      console.error("Error fetching scrapbooks:", error);
-    }
-  };
-
   useEffect(() => {
-    fetchScrapbooks();
-  }, []);
+    fetchScrapbooks(user, setScrapbooks);
+  }, [user]);
 
-  const handleDeleteScrapbook = async (scrapbookId) => {
-    try {
-      const res = await fetch("http://localhost:5001/scrapbook", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: user,
-          id: scrapbookId,
-        }),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to delete scrapbook: ${res.status}`);
-      }
-
-      setScrapbooks(scrapbooks.filter((scrapbook) => scrapbook.id !== scrapbookId));
-    } catch (error) {
-      console.error("Error deleting scrapbook:", error);
-    }
+  const handleDeleteScrapbook = (scrapbookId) => {
+    deleteScrapbook(user, scrapbookId, setScrapbooks);
   };
-
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -149,7 +108,7 @@ const Dashboard = () => {
       <Typography
         variant="h2"
         sx={{
-          color: "text.primary",
+          color: ".text.primary",
           fontWeight: "bold",
           fontSize: { xs: "2rem", sm: "3rem", md: "4rem" },
           position: "absolute",
