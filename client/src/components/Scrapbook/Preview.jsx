@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import useDarkMode from "../../context/useDarkMode";
 import { darkTheme, lightTheme } from "../Theme/theme";
 import useAuth from "../../context/useAuth";
@@ -15,6 +15,7 @@ const Preview = ({ pages, setPages, page, onPageClick }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState(null);
+  const pageRefs = useRef([]);
 
   const handleRightClick = (e, pageId) => {
     e.preventDefault();
@@ -22,6 +23,19 @@ const Preview = ({ pages, setPages, page, onPageClick }) => {
     setSelectedPageId(pageId);
     setShowDeleteButton(true);
   };
+
+  const handlePageClick = (index) => {
+    onPageClick(index);
+  };
+
+  useEffect(() => {
+    if (pageRefs.current[page]) {
+      pageRefs.current[page].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [page]);
 
   const handleDeletePage = async () => {
     if (!selectedPageId) return;
@@ -87,9 +101,10 @@ const Preview = ({ pages, setPages, page, onPageClick }) => {
         {pages.map((pageObj, index) => (
           <div
             key={pageObj.id}
-            onClick={() => onPageClick(index)}
+            onClick={() => handlePageClick(index)}
             onContextMenu={(e) => handleRightClick(e, pageObj.id)}
             style={getPageStyles(index)}
+            ref={(el) => (pageRefs.current[index] = el)}
           >
             {index + 1}
           </div>
