@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import useDarkMode from "../../context/useDarkMode";
 import { darkTheme, lightTheme } from "../Theme/theme";
 import useAuth from "../../context/useAuth";
@@ -11,17 +11,10 @@ const Preview = ({ pages, setPages, page, onPageClick }) => {
   const { user } = useAuth();
   const { id } = useParams();
   const { darkMode } = useDarkMode();
-  const containerRef = useRef(null);
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState(null);
-
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollLeft = containerRef.current.scrollWidth;
-    }
-  }, [pages]);
 
   const handleRightClick = (e, pageId) => {
     e.preventDefault();
@@ -31,34 +24,30 @@ const Preview = ({ pages, setPages, page, onPageClick }) => {
   };
 
   const handleDeletePage = async () => {
-    try {
-      if (!selectedPageId) return;
+    if (!selectedPageId) return;
 
-      const selectedPageIndex = pages.findIndex(page => page.id === selectedPageId);
-      await deletePage(user, id, selectedPageId);
+    const updatedPages = pages.filter(page => page.id !== selectedPageId);
+    await deletePage(user, id, selectedPageId);
+    setPages(updatedPages);
 
-      setPages(prevPages => {
-        const updatedPages = prevPages.filter(page => page.id !== selectedPageId);
-        return updatedPages;
-      });
-
-      if (pages.length > 1) {
-        onPageClick(selectedPageIndex === pages.length ? selectedPageIndex - 1 : selectedPageIndex);
-      } else {
-        handleAddPage();
-      }
-
-      setShowDeleteButton(false);
-    } catch (error) {
-      console.error("Error deleting page:", error);
+    if (updatedPages.length === 0) {
+      await handleAddPage();
+    } else {
+      const newSelectedIndex = pages.length === 1 ? 0 : Math.max(0, pages.findIndex(page => page.id === selectedPageId) - 1);
+      onPageClick(newSelectedIndex);
     }
+
+    setShowDeleteButton(false);
   };
 
   const handleAddPage = async () => {
     try {
       const newPage = await addPage({ userId: user, scrapbookId: id });
-      setPages(prevPages => [...prevPages, newPage]);
-      onPageClick(pages.length);  // Set the new page as active
+      setPages((prevPages) => {
+        const updatedPages = [...prevPages, newPage];
+        onPageClick(updatedPages.length - 1);
+        return updatedPages;
+      });
     } catch (error) {
       console.error("Error adding page:", error);
     }
@@ -83,7 +72,6 @@ const Preview = ({ pages, setPages, page, onPageClick }) => {
   return (
     <div style={{ display: "flex", alignItems: "center" }} onClick={() => setShowDeleteButton(false)}>
       <div
-        ref={containerRef}
         style={{
           display: "flex",
           flexDirection: "row",

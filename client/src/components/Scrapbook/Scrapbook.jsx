@@ -102,12 +102,12 @@ const Scrapbook = () => {
         <Slide page={page + 1} backgroundColor={backgroundColor} textColor={textColor} />
       </Box>
       <Box display="flex" justifyContent="center" alignItems="center" width="100%">
-      <Preview
-        pages={pages}
-        setPages={handleScrapbookUpdate}
-        page={page}
-        onPageClick={handlePageClick}
-      />
+        <Preview
+          pages={pages}
+          setPages={(updatedPages) => handleScrapbookUpdate({ pages: updatedPages })}
+          page={page}
+          onPageClick={handlePageClick}
+        />
       </Box>
       <DrawerComponent />
       <DarkModeButton />
